@@ -24,9 +24,4 @@
 #define DOCloseDoor 1
 
 
-
-void GetNode(AGVIO_type * pBoxIO, AGVBox_type * pBoxMsg);
-void GetChannel(AGVIO_type * pBoxIO, AGVBox_type * pBoxMsg );
-void LinkIO(AGVIO_type * pBoxIO, AGVBox_type * pBoxMsg);
-void ConfigChannel(AGVIO_type * pBoxIO,AGVBox_type * pBoxMsg);
 u16 CRC_Verify(u8 *CRC_Buf,u8 Buf_Length);

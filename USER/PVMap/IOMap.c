@@ -1,12 +1,11 @@
 #include "IOMap.h"
-
+#include "HwCfg.h"
 AGVIO_type BoxIO;
-
+#define RS485RE SetDO(Uart2RDE,0)
+#define RS485SE SetDO(Uart2RDE,1)
 cyc_task_fun cycTask[]={cyc2ms,cyc4ms,cyc10ms,cyc100ms,cyc200ms,cyc500ms,cycLongTsk};
 typedef	enum {task2ms=0,task4ms,task10ms,task100ms,task200ms,task500ms,taskLong} cycTaskIndex;
 
-void RS2322TTL();
-void TTL2RS232();
 void PVMap(AGVIO_type * pBoxIO)
 {
 		///////DI MAPING///////
@@ -15,46 +14,27 @@ void PVMap(AGVIO_type * pBoxIO)
 		pBoxIO->DI[2]		= ReadIn(DI3);
 		pBoxIO->DI[3]		= ReadIn(DI4);
 	
-		pBoxIO->DI[4]		= ReadIn(BT1);
-		pBoxIO->DI[5]		= ReadIn(BT2);
-		pBoxIO->DI[6]		= ReadIn(BT3);
-		pBoxIO->DI[7]		= ReadIn(BT4);
+		pBoxIO->DI[4]		= ReadIn(DI5);
+		pBoxIO->DI[5]		= ReadIn(DI6);
+		pBoxIO->DI[6]		= ReadIn(DI7);
+		pBoxIO->DI[7]		= ReadIn(DI8);
 	
-		//////DO Maping/////////
-		if(SonarDual.Internal.OutComState==1){
-			SetDO(DoBuzzer,BoxIO.flagLed[sLedFlash]);
-		}
-		else if(SonarDual.Internal.OutComState==2){
-			SetDO(DoBuzzer,BoxIO.flagLed[DBLedFlash]);
-		}
-		else if(SonarDual.Internal.OutComState==3){	
-			SetDO(DoBuzzer,BoxIO.flagLed[fLedFlash]);
-		}
-		else{
-			SetDO(DoBuzzer,0);
-		}	
+		SetDO(DO1,pBoxIO->DO[0]);
+		SetDO(DO2,pBoxIO->DO[1]);
+		SetDO(DO3,pBoxIO->DO[2]);
+		SetDO(DO4,pBoxIO->DO[3]);
 	
-		SetDO(DO1,pBoxIO->DO[1]);
-		SetDO(DO2,pBoxIO->DO[2]);
-		SetDO(DO3,pBoxIO->DO[3]);
-		SetDO(DO4,pBoxIO->DO[4]);
-	
-		SonarDual.bDI1 = pBoxIO->DI[0];
-		SonarDual.bDI2 = pBoxIO->DI[1];
-		SonarDual.bDI3 = pBoxIO->DI[2];
-		SonarDual.bDI4 = pBoxIO->DI[3];
-		
-		pBoxIO->DO[1] = SonarDual.bDO1;
-		pBoxIO->DO[2] = SonarDual.bDO2;
-		pBoxIO->DO[3] = SonarDual.bDO3;
-		pBoxIO->DO[4] = SonarDual.bDO4;
-			
-		SetDO(DO5,pBoxIO->DO[5]);
-		SetDO(DO6,pBoxIO->DO[6]);	
-		SetDO(DO_CANS,pBoxIO->DO[7]);	
-		SetDO(DO_YL1,pBoxIO->DO[8]);
-		SetDO(DO_YL2,pBoxIO->DO[9]);			
+		SetDO(DO5,pBoxIO->DO[4]);
+		SetDO(DO6,pBoxIO->DO[5]);	
+		SetDO(DO7,pBoxIO->DO[6]);	
+		SetDO(DO8,pBoxIO->DO[7]);		
 		///////////////////////		
+		SetDO(LED1,pBoxIO->LED[0]);
+		SetDO(LED2,!pBoxIO->LED[1]);
+		SetDO(LED3,pBoxIO->LED[2]);
+		SetDO(LED4,pBoxIO->LED[3]);
+		SetDO(LED5,pBoxIO->LED[4]);
+		
 }
 
 void FillUrtBuf(UrtBuf_type * UartDat,uint32_t USARTx)//
@@ -91,57 +71,57 @@ void MBLArry(u8 *buffer,uint8_t bufLen)
 }
 
 
-void USART1_IRQHandler(void)///RS232
+void USART3_IRQHandler(void)///RS232
 {
-	FillUrtBuf(&BoxIO.Uart1Dat,Uartx1);//////fill the Com Buffer//////
+	FillUrtBuf(&BoxIO.Uart3Dat,Uartx3);//////fill the Com Buffer//////
 }
 
-void USART2_IRQHandler(void)///TTL
+void USART2_IRQHandler(void)///RS485
 {
 	FillUrtBuf(&BoxIO.Uart2Dat,Uartx2);//////fill the Com Buffer//////	
 }
 void TIM3_IRQHandler(void)
 {
-	static uint32_t oldTimeStamp[10];					///5¸ö²»Í¬Ê±¼äÖÜÆÚµÄÖÐ¶Ï´¦Àí
-	if(TIM3->SR&0X0001)												//Òç³öÖÐ¶Ï
+	static uint32_t oldTimeStamp[10];					///5ï¿½ï¿½ï¿½ï¿½Í¬Ê±ï¿½ï¿½ï¿½ï¿½ï¿½Úµï¿½ï¿½Ð¶Ï´ï¿½ï¿½ï¿½
+	if(TIM3->SR&0X0001)												//ï¿½ï¿½ï¿½ï¿½Ð¶ï¿½
 	{
-		BoxIO.timeStamp++;											//Éú³ÉÒ»¸öTimeStampµÄÊ±ÖÓ		
-		/////////////////2MSÖ´ÐÐÒ»±é////////////////////
+		BoxIO.TimeStamp++;											//ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½TimeStampï¿½ï¿½Ê±ï¿½ï¿½		
+		/////////////////2MSÖ´ï¿½ï¿½Ò»ï¿½ï¿½////////////////////
 		oldTimeStamp[task2ms]++;
 		if(oldTimeStamp[task2ms]>=time2ms)
 		{
 			cycTask[task2ms]();
 			oldTimeStamp[task2ms] = 0;
 		};
-		/////////////////4MSÖ´ÐÐÒ»±é////////////////////
+		/////////////////4MSÖ´ï¿½ï¿½Ò»ï¿½ï¿½////////////////////
 		oldTimeStamp[task4ms]++;
 		if(oldTimeStamp[task4ms]>=time4ms)
 		{
 			cycTask[task4ms]();
 			oldTimeStamp[task4ms] = 0;
 		};
-		/////////////////10MSÖ´ÐÐÒ»±é////////////////////
+		/////////////////10MSÖ´ï¿½ï¿½Ò»ï¿½ï¿½////////////////////
 		oldTimeStamp[task10ms]++;
 		if(oldTimeStamp[task10ms]>=time10ms)
 		{
 			cycTask[task10ms]();
 			oldTimeStamp[task10ms] = 0;
 		};
-		/////////////////200MSÖ´ÐÐÒ»±é////////////////////
+		/////////////////200MSÖ´ï¿½ï¿½Ò»ï¿½ï¿½////////////////////
 		oldTimeStamp[task200ms]++;
 		if(oldTimeStamp[task200ms]>=time200ms)
 		{
 			cycTask[task200ms]();
 			oldTimeStamp[task200ms] = 0;
 		};
-		/////////////////100MSÖ´ÐÐÒ»±é////////////////////
+		/////////////////100MSÖ´ï¿½ï¿½Ò»ï¿½ï¿½////////////////////
 		oldTimeStamp[task100ms]++;
 		if(oldTimeStamp[task100ms]>=time100ms)
 		{
 			cycTask[task100ms]();
 			oldTimeStamp[task100ms] = 0;
 		};
-		/////////////////500msÖ´ÐÐÒ»±é///////////////////
+		/////////////////500msÖ´ï¿½ï¿½Ò»ï¿½ï¿½///////////////////
 		oldTimeStamp[task500ms]++;
 		if(oldTimeStamp[task500ms]>=time500ms)
 		{
@@ -149,7 +129,7 @@ void TIM3_IRQHandler(void)
 			oldTimeStamp[task500ms] = 0;
 		};
 		oldTimeStamp[taskLong]++;
-		////////////////³¤Ê±¼äµÄÊ±¼ä£¬ÈÎÒâÉè¶¨/////////
+		////////////////ï¿½ï¿½Ê±ï¿½ï¿½ï¿½Ê±ï¿½ä£¬ï¿½ï¿½ï¿½ï¿½ï¿½è¶¨/////////
 		if(oldTimeStamp[taskLong]>=timeLong)
 		{
 			cycTask[taskLong]();
@@ -157,7 +137,7 @@ void TIM3_IRQHandler(void)
 		};
 	}
 	
-	TIM3->SR&=~(1<<0);//Çå³ýÖÐ¶Ï±êÖ¾Î» 	 
+	TIM3->SR&=~(1<<0);//ï¿½ï¿½ï¿½ï¿½Ð¶Ï±ï¿½Ö¾Î» 	 
 }
 
 void SendUrtBuf(UrtBuf_type * UartDat,uint32_t USARTx)
@@ -166,31 +146,30 @@ void SendUrtBuf(UrtBuf_type * UartDat,uint32_t USARTx)
 		unsigned char bufLen = UartDat->sLen;
 		USART_TypeDef * Uarts;
 		Uarts = (USART_TypeDef*)USARTx;
+		switch(USARTx)
+		{
+		  case Uartx2:
+				RS485SE;
+				break;
+			default:
+				;
+				break;
+		}
 		for(i=0;i<bufLen;i++)
 		{			
 			USART_SendData(Uarts, UartDat->sBuffer[i]);
 			while (USART_GetFlagStatus(Uarts, USART_FLAG_TXE) == RESET);			
 		}
 		while(USART_GetFlagStatus(Uarts, USART_FLAG_TC)==RESET);
+		switch(USARTx)
+		{
+		  case Uartx2:
+				RS485RE;
+				break;
+			default:
+				;
+				break;
+		}
 };
 
-void RS2322TTL()
-{
-	u8 ResData;
-	if(USART_GetITStatus(USART1, USART_IT_RXNE) != RESET)
-		ResData = USART1->DR;
-	while (USART_GetFlagStatus(USART2, USART_FLAG_TXE) == RESET);		
-		USART_SendData(USART2, ResData);
-//	while (USART_GetFlagStatus(USART2, USART_FLAG_TC));		
 
-}
-void TTL2RS232()
-{
-	u8 ResData;
-	if(USART_GetITStatus(USART1, USART_IT_RXNE) != RESET)
-		ResData = USART2->DR;
-	while (USART_GetFlagStatus(USART2, USART_FLAG_TXE) == RESET);		
-		USART_SendData(USART1, ResData);
-//	while (USART_GetFlagStatus(USART2, USART_FLAG_TC));		
-
-}

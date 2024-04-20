@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "boxfun.h": "c",
+        "boxapp.h": "c",
+        "iomap.h": "c"
+    }
+}

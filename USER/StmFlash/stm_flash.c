@@ -60,7 +60,7 @@ void STMFLASH_Write ( uint32_t WriteAddr, uint16_t * pBuffer, uint16_t NumToWrit
 	
 	while(1) 
 	{	
-		STMFLASH_Read(secpos*STM_SECTOR_SIZE+FLASH_BASE,STMFLASH_BUF,STM_SECTOR_SIZE/2);//读出整个扇区的内容
+		//STMFLASH_Read(secpos*STM_SECTOR_SIZE+FLASH_BASE,STMFLASH_BUF,STM_SECTOR_SIZE/2);//读出整个扇区的内容
 		for(i=0;i<secremain;i++)//校验数据
 		{
 			if(STMFLASH_BUF[secoff+i]!=0XFFFF)break;//需要擦除  	  
@@ -101,6 +101,7 @@ void STMFLASH_Write ( uint32_t WriteAddr, uint16_t * pBuffer, uint16_t NumToWrit
 //ReadAddr:起始地址
 //pBuffer:数据指针
 //NumToWrite:半字(16位)数
+static uint32_t remAdrr = 0;
 void STMFLASH_Read ( uint32_t ReadAddr, uint16_t *pBuffer, uint16_t NumToRead )   	
 {
 	uint16_t i;
@@ -110,6 +111,7 @@ void STMFLASH_Read ( uint32_t ReadAddr, uint16_t *pBuffer, uint16_t NumToRead )
 	{
 		pBuffer[i]=STMFLASH_ReadHalfWord(ReadAddr);//读取2个字节.
 		ReadAddr+=2;//偏移2个字节.	
+		remAdrr = ReadAddr;
 	}
 	
 }

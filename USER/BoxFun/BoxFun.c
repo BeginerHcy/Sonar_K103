@@ -1,52 +1,6 @@
 #include "BoxFun.h"
 
-AGVBox_type AGVBox;
-data_parse_fun CaptureFun1[]={PhoneCap,AMSCap,AGVCap,DoorCap,xChnCap,IMUCap,ComTestCap};
-void AGVCap(UrtBuf_type * pSrcBuf,AGVBox_type * pBoxMsg)
-{
-	
-};
 
-void AMSCap(UrtBuf_type * pSrcBuf,AGVBox_type * pBoxMsg)
-{
-	
-};
-void ComTestCap(UrtBuf_type * pSrcBuf,AGVBox_type * pBoxMsg)
-{
-;
-};
-void IMUCap(UrtBuf_type * pSrcBuf,AGVBox_type * pBoxMsg)
-{
-
-
-};
-void PhoneCap(UrtBuf_type * pSrcBuf,AGVBox_type * pBoxMsg)
-{
-}
-void DoorCap(UrtBuf_type * pSrcBuf,AGVBox_type * pBoxMsg)
-{
-};
-void xChnCap(UrtBuf_type * pSrcBuf,AGVBox_type * pBoxMsg)
-{
-};
-///////////
-void GetNode(AGVIO_type * pBoxIO, AGVBox_type * pBoxMsg)
-{
-;
-};
-
-///////////
-void GetChannel(AGVIO_type * pBoxIO, AGVBox_type * pBoxMsg)
-{
-};
-
-void LinkIO(AGVIO_type * pBoxIO, AGVBox_type * pBoxMsg)
-{
-	
-}
-void ConfigChannel(AGVIO_type * pBoxIO, AGVBox_type * pBoxMsg)
-{
-}
 
 u16 CRC_Verify(u8 *CRC_Buf,u8 Buf_Length)
 {
