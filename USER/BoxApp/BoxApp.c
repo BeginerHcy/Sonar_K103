@@ -171,7 +171,7 @@ void SonarApp(){
 	
 	BoxIO.Uart2Dat.sBuffer[0] = NodenDis[pNowNode][0];
 	BoxIO.Uart2Dat.sBuffer[1] = 0x02;
-	BoxIO.Uart2Dat.sBuffer[2] = 0xBC;
+	BoxIO.Uart2Dat.sBuffer[2] = 0xB0;
 	BoxIO.Uart2Dat.sLen 			= 3;
 	SonarDual.StatusStep = 10;
 	SendUrtBuf(&BoxIO.Uart2Dat,Uartx2);
