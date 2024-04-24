@@ -5,7 +5,7 @@
 uint16_t NodenDis[10][3],pNowNode=0,NodeSum=2,TimeRecInterval=0;
 uint8_t Parameter1[300] = {0};
 uint8_t ReadTemp1[300] = {0};
-uint32_t oldTimeStampForAlive,TimeAlive,timesExit[4],oldTimeStampForCnt=0,oldTimeStampFor4msCnt=0,oldTimeStampFor1sCnt;
+uint32_t oldTimeStampForAlive,TimeAlive,timesExit[4],oldTimeStampForCnt=0,oldTimeStampFor4msCnt=0,oldTimeStampFor1sCnt, oldTimeStampFor25msCnt;
 u32 OldtimeStampCnt2,OldStamp[10],oldTimeStampForAlive,TimeAlive;
 SonarDualData_type SonarDual={0};
 bool firstBoot;
@@ -74,7 +74,7 @@ void SonarApp(){
 		NodenDis[pNowNode][2]++;
 		oldTimeStampForCnt = BoxIO.TimeStamp;
 	}
-	if(BoxIO.TimeStamp - 1000 > oldTimeStampFor1sCnt || oldTimeStampFor1sCnt > BoxIO.TimeStamp){//every 1 s exeed;
+	if(BoxIO.TimeStamp - 1000 > 0 || oldTimeStampFor1sCnt > BoxIO.TimeStamp){//every 1 s exeed;
 		if(SonarDual.cmdPCConnect){
 			SonarDual.cmdSendRS232Data = 1;
 		}
@@ -169,59 +169,68 @@ void SonarApp(){
 	NodenDis[0][0] 	= gSystemPara.SonarNodeCHNA ;
 	NodenDis[1][0] 	= gSystemPara.SonarNodeCHNB;
 	
-	BoxIO.Uart2Dat.sBuffer[0] = NodenDis[pNowNode][0];
-	BoxIO.Uart2Dat.sBuffer[1] = 0x02;
-	BoxIO.Uart2Dat.sBuffer[2] = 0xB0;
-	BoxIO.Uart2Dat.sLen 			= 3;
-	SonarDual.StatusStep = 10;
-	SendUrtBuf(&BoxIO.Uart2Dat,Uartx2);
-	delay_ms(1);
-	SonarDual.StatusStep = 20;
-		///////////////////////////////////////
-	while(BoxIO.Uart2Dat.pRfil - BoxIO.Uart2Dat.pRder < 2 && NodenDis[pNowNode][2]/2<40){
-		if(BoxIO.TimeStamp>oldTimeStampForAlive)
-				TimeAlive+=(BoxIO.TimeStamp-oldTimeStampForAlive);
-		oldTimeStampForAlive = BoxIO.TimeStamp;
-		if(TimeAlive>100){
-			break;
-		}
-	};
-	if(BoxIO.Uart2Dat.pRfil>2){
-		if((BoxIO.Uart2Dat.rBuffer[BoxIO.Uart2Dat.pRfil-1]==0x71||
-			BoxIO.Uart2Dat.rBuffer[BoxIO.Uart2Dat.pRfil-1]==0x00) &&( 
-			BoxIO.Uart2Dat.rBuffer[BoxIO.Uart2Dat.pRfil-3]==0xE2 || 
-			BoxIO.Uart2Dat.rBuffer[BoxIO.Uart2Dat.pRfil-3]==0xE0)){
-				SonarDual.ActID = BoxIO.Uart2Dat.rBuffer[BoxIO.Uart2Dat.pRfil-2];
+
+	if(BoxIO.TimeStamp - 25 > oldTimeStampFor25msCnt || oldTimeStampFor25msCnt > BoxIO.TimeStamp){
+		BoxIO.Uart2Dat.sBuffer[0] = NodenDis[pNowNode][0];
+		BoxIO.Uart2Dat.sBuffer[1] = 0x02;
+		BoxIO.Uart2Dat.sBuffer[2] = 0xB0;
+		BoxIO.Uart2Dat.sLen 			= 3;
+		SonarDual.StatusStep = 10;
+		SendUrtBuf(&BoxIO.Uart2Dat,Uartx2);
+		delay_ms(1);
+		SonarDual.StatusStep = 20;
+			///////////////////////////////////////
+		while(BoxIO.Uart2Dat.pRfil - BoxIO.Uart2Dat.pRder < 2 && NodenDis[pNowNode][2]/2<40){
+			if(BoxIO.TimeStamp>oldTimeStampForAlive)
+					TimeAlive+=(BoxIO.TimeStamp-oldTimeStampForAlive);
+			oldTimeStampForAlive = BoxIO.TimeStamp;
+			if(TimeAlive>100){
+				break;
 			}
-	}
-	SonarDual.StatusStep = 30;
-	if(BoxIO.Uart2Dat.pRfil - BoxIO.Uart2Dat.pRder > 1)
-	{
-		NodenDis[pNowNode][1] = BoxIO.Uart2Dat.rBuffer[BoxIO.Uart2Dat.pRfil-2]*256 + BoxIO.Uart2Dat.rBuffer[BoxIO.Uart2Dat.pRfil-1];
-		BoxIO.Uart2Dat.pRder = BoxIO.Uart2Dat.pRfil;
-		TimeRecInterval = NodenDis[pNowNode][2]/2;
-		if(pNowNode==0)
-			SonarDual.AliveCHA = 1;
-		if(pNowNode==1)
-			SonarDual.AliveCHB = 1;
-	}
-	else{
-		BoxIO.Uart2Dat.pRder = BoxIO.Uart2Dat.pRfil;
-		timesExit[pNowNode]++;
-		if(timesExit[0]>10){
-			SonarDual.AliveCHA = 0;
+		};
+		if(BoxIO.Uart2Dat.pRfil>2){
+			if((BoxIO.Uart2Dat.rBuffer[BoxIO.Uart2Dat.pRfil-1]==0x71||
+				BoxIO.Uart2Dat.rBuffer[BoxIO.Uart2Dat.pRfil-1]==0x00) &&( 
+				BoxIO.Uart2Dat.rBuffer[BoxIO.Uart2Dat.pRfil-3]==0xE2 || 
+				BoxIO.Uart2Dat.rBuffer[BoxIO.Uart2Dat.pRfil-3]==0xE0)){
+					SonarDual.ActID = BoxIO.Uart2Dat.rBuffer[BoxIO.Uart2Dat.pRfil-2];
+				}
 		}
-		if(timesExit[1]>10){
-			SonarDual.AliveCHB = 0;
+		SonarDual.StatusStep = 30;
+		if(BoxIO.Uart2Dat.pRfil - BoxIO.Uart2Dat.pRder > 1)
+		{
+			NodenDis[pNowNode][1] = BoxIO.Uart2Dat.rBuffer[BoxIO.Uart2Dat.pRfil-2]*256 + BoxIO.Uart2Dat.rBuffer[BoxIO.Uart2Dat.pRfil-1];
+			BoxIO.Uart2Dat.pRder = BoxIO.Uart2Dat.pRfil;
+			TimeRecInterval = NodenDis[pNowNode][2]/2;
+			if(pNowNode==0)
+				SonarDual.AliveCHA = 1;
+			if(pNowNode==1)
+				SonarDual.AliveCHB = 1;
 		}
+		else{
+			BoxIO.Uart2Dat.pRder = BoxIO.Uart2Dat.pRfil;
+			timesExit[pNowNode]++;
+			if(timesExit[0]>10){
+				SonarDual.AliveCHA = 0;
+			}
+			if(timesExit[1]>10){
+				SonarDual.AliveCHB = 0;
+			}
+		}
+		SonarDual.StatusStep 	= 40;
+		TimeAlive 						= 0;
+		NodenDis[pNowNode][2] = 0;
+		///////////////////////////////////////
+		SonarDual.DistanCHA = NodenDis[0][1];//
+		SonarDual.DistanCHB = NodenDis[1][1];//
+		///////////////////////////////////////	
+		oldTimeStampFor25msCnt = BoxIO.TimeStamp;
+
+		pNowNode++;
+		if(pNowNode>=NodeSum)pNowNode=0;
 	}
-	SonarDual.StatusStep 	= 40;
-	TimeAlive 						= 0;
-	NodenDis[pNowNode][2] = 0;
-	///////////////////////////////////////
-	SonarDual.DistanCHA = NodenDis[0][1];//
-	SonarDual.DistanCHB = NodenDis[1][1];//
-	///////////////////////////////////////	
+	
+	
 	///////////////////////////////////////
 	if(!SonarDual.bDI1 && !SonarDual.bDI2 && !SonarDual.bDI3 && !SonarDual.bDI4)
 		SonarDual.Internal.AreaDetectSwitch = 0;
@@ -287,8 +296,7 @@ void SonarApp(){
 	BoxIO.LED[4] = !SonarDual.bDO3;
 	
 	///////////////////////////////////////
-	pNowNode++;
-	if(pNowNode>=NodeSum)pNowNode=0;
+	
 
 	////////////Data flow
 	if(HandShakeCap(&BoxIO.Uart3Dat)){//RS232
