@@ -466,6 +466,11 @@
               <FileType>1</FileType>
               <FilePath>..\FWlib\src\stm32f10x_spi.c</FilePath>
             </File>
+            <File>
+              <FileName>stm32f10x_dma.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\FWlib\src\stm32f10x_dma.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
